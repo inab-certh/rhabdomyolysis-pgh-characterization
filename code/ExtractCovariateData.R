@@ -1,5 +1,11 @@
 #!/usr/bin/env Rscript
 
+cdmDatabaseSchema <- "omop"
+resultsDatabaseSchema <- "results"
+databaseId <- "papag"
+databaseName <- "Papageorgiou General Hospital"
+databaseDescription <- "Papageorgiou General Hospital"
+
 connectionDetails <- DatabaseConnector::createConnectionDetails(
   dbms = Sys.getenv("omop_db_dbms"),
   server = Sys.getenv("omop_db_server"),
