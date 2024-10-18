@@ -35,11 +35,6 @@ extended_covariates <- covariates |>
     by = "analysisId"
   )
 
-data |>
-  dplyr::group_by(dplyr::across(targeted_subgroups)) |>
-  dplyr::summarise_at(target_variable, fun, ...) |>
-  dplyr::ungroup()
-
 results_any_time_prior <- extended_covariates |> 
   dplyr::filter(analysisId %in% c(1, 2, 101, 301))
 
@@ -72,17 +67,44 @@ run_in_subgroups(
 results_any_time_prior |> 
   dplyr::filter(analysisId == 101) |> 
   dplyr::group_by(covariateName) |> 
-  dplyr::summarise(perc = n() / 320 * 100) |> 
+  dplyr::summarise(perc = dplyr::n() / 320 * 100) |> 
   dplyr::arrange(dplyr::desc(perc))
 
 results_any_time_prior |> 
   dplyr::filter(analysisId == 301) |> 
   dplyr::group_by(covariateName) |> 
-  dplyr::summarise(perc = n() / 320 * 100) |> 
+  dplyr::summarise(perc = dplyr::n() / 320 * 100) |> 
   dplyr::arrange(dplyr::desc(perc))
 
+run_in_analysis(
+  data = extended_covariates,
+  analysis_id = 1,
+  fun = function(x) sum(x) / 320 * 100
+)
 
-pp |> filter(covariateName %in% c(
+
+analysis_ids <- c(
+  gender = 1,
+  conditions = 101, 
+  drugs = 301,
+  procedures = 501
+)
+
+analysis_ids |> 
+  purrr::map(
+    .f = run_in_analysis,
+    data = extended_covariates, 
+    fun = function(x) sum(x) / 320 * 100
+  )
+
+mapply(
+  run_in_analysis,
+  analysis_ids,
+  data = extended_covariates, 
+  fun = function(x) sum(x) / 320 * 100
+)
+
+results_any_time_prior |> dplyr::filter(covariateName %in% c(
   "rosuvastatin",
   "simvastatin",
   "atorvastatin",
@@ -103,17 +125,45 @@ pp <- lapply(
 
 lapply(pp, dplyr::rename, "percent" = "result")
 
-
-
-
 run_subgroup_in_analysis(
   data = extended_covariates,
   subgroup_settings = subgroup_settings,
-  target = 301,
+  target = 104,
   fun = function(data, n) sum(data$covariateValue) / n * 100,
   result_label = "percent"
 )
 
+
+
+
+
+
+
+
+results_any_time_prior |> 
+  dplyr::filter(analysisId == 2) -> data_with_age
+
+data_with_age |> 
+  dplyr::filter(rowId %in% subgroup_settings$female) |> 
+  ggplot2::ggplot(
+    ggplot2::aes(x = covariateValue)
+  ) +
+  ggplot2::geom_density()
+
+
+Cairo::CairoPNG(filename = "test.png", width = 800, height = 600)
+results_any_time_prior |> 
+  dplyr::filter(analysisId == 2) |> 
+  dplyr::mutate(
+    sex = ifelse(rowId %in% subgroup_settings$female, "Female", "Male")
+  ) |> 
+  ggplot2::ggplot(
+    ggplot2::aes(x = covariateValue, fill = sex)
+  ) +
+  ggplot2::geom_density(alpha = .4) +
+  ggplot2::xlim(0, 120) +
+  ggplot2::theme_bw()
+dev.off()
 
 
 subgroup_row_ids <- female_patient_ids

@@ -26,10 +26,13 @@ covariateSettings <- FeatureExtraction::createCovariateSettings(
   useDrugExposureLongTerm = TRUE,
   useDrugExposureMediumTerm = TRUE,
   useDrugExposureShortTerm = TRUE,
+  useDrugGroupEraShortTerm = TRUE,
   useProcedureOccurrenceAnyTimePrior = TRUE,
   useProcedureOccurrenceLongTerm = TRUE,
   useProcedureOccurrenceMediumTerm = TRUE,
-  useProcedureOccurrenceShortTerm = TRUE
+  useProcedureOccurrenceShortTerm = TRUE,
+  shortTermStartDays = -14,
+  endDays = 14
 )
 
 covariateData <- FeatureExtraction::getDbCovariateData(
