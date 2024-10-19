@@ -1,7 +1,17 @@
 #!/usr/bin/env Rscript
 source("code/helper.R")
+args <- commandArgs(trailingOnly = TRUE)
 
-covariateData <- FeatureExtraction::loadCovariateData("covariateData")
+message(
+  crayon::bold("Running characterization for analysis: "),
+  crayon::bold(crayon::italic(args[1]))
+  )
+covariateData <- FeatureExtraction::loadCovariateData(
+  file = file.path(
+    "data",
+    paste("covariateData", args[1], sep = "_")
+  )
+)
 
 covariates <- covariateData$covariates |> dplyr::collect()
 covariateRef <- covariateData$covariateRef |> dplyr::collect()
@@ -24,33 +34,27 @@ extended_covariates <- covariates |>
 # Overall analyses
 # ------------------------------------------------------------------------------
 
-analysis_ids_any_time <- c(
-  gender = 1,
-  conditions = 101, 
-  drugs = 301,
-  procedures = 501
-)
-analysis_ids_short_term <- c(
-  gender = 1,
-  conditions = 104, 
-  drugs = 304,
-  drug_groups = 412,
-  procedures = 504
+analysis_ids <- analysisRef |> 
+  dplyr::filter(isBinary == "Y") |> 
+  dplyr::pull(analysisId)
+
+save_directory <- file.path(
+  "results",
+  paste("results", args[1], sep = "_")
 )
 
-overall_analysis_any_time <- analysis_ids_any_time |> 
+if (!dir.exists(save_directory)) {
+  dir.create(path = save_directory, recursive = TRUE)
+  message("Created directory: ", crayon::italic(save_directory))
+}
+
+overall_analysis <- analysis_ids |> 
   purrr::map(
     .f = run_in_analysis,
     data = extended_covariates, 
     fun = function(df, n = 320) length(unique(df$rowId)) / n * 100,
-    file = "results"
-  )
-overall_analysis_short_term <- analysis_ids_short_term |> 
-  purrr::map(
-    .f = run_in_analysis,
-    data = extended_covariates, 
-    fun = function(df, n = 320) length(unique(df$rowId)) / n * 100,
-    file = "results"
+    file = save_directory,
+    analysis_name = args[1]
   )
 
 
@@ -76,22 +80,23 @@ subgroup_settings <- list(
   male = male_patient_ids
 )
 
-gender_subgroup_analysis_any_time <- analysis_ids_any_time |> 
+gender_subgroup_analysis <- analysis_ids |> 
   purrr::map(
     .f = run_subgroup_in_analysis,
     data = extended_covariates, 
     subgroup_settings = subgroup_settings,
     result_label = "percent",
     fun = function(df, n) length(unique(df$rowId)) / n * 100,
-    file = "results"
+    file = save_directory,
+    analysis_name = args[1],
+    subgroup_label = "gender"
   )
 
-gender_subgroup_analysis_short_term <- analysis_ids_short_term |> 
-  purrr::map(
-    .f = run_subgroup_in_analysis,
-    data = extended_covariates, 
-    subgroup_settings = subgroup_settings,
-    result_label = "percent",
-    fun = function(df, n) length(unique(df$rowId)) / n * 100,
-    file = "results"
+readr::write_csv(
+  x = analysisRef,
+  file = file.path(
+    "results",
+    paste("results", args[1], sep = "_"),
+    paste0(paste(args[1], "analysis_ref", sep = "_"), ".csv")
   )
+)

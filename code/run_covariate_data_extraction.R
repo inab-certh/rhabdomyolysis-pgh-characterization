@@ -15,35 +15,70 @@ connectionDetails <- DatabaseConnector::createConnectionDetails(
   pathToDriver = Sys.getenv("omop_db_driver")
 )
 
-covariateSettings <- FeatureExtraction::createCovariateSettings(
-  useDemographicsAge = TRUE,
-  useDemographicsGender = TRUE,
-  useConditionOccurrenceAnyTimePrior = TRUE,
-  useConditionOccurrenceLongTerm = TRUE,
-  useConditionOccurrenceMediumTerm = TRUE,
-  useConditionOccurrenceShortTerm = TRUE,
-  useDrugExposureAnyTimePrior = TRUE,
-  useDrugExposureLongTerm = TRUE,
-  useDrugExposureMediumTerm = TRUE,
-  useDrugExposureShortTerm = TRUE,
-  useDrugGroupEraShortTerm = TRUE,
-  useProcedureOccurrenceAnyTimePrior = TRUE,
-  useProcedureOccurrenceLongTerm = TRUE,
-  useProcedureOccurrenceMediumTerm = TRUE,
-  useProcedureOccurrenceShortTerm = TRUE,
-  shortTermStartDays = -14,
-  endDays = 14
+
+covariate_settings_list <- list(
+  short_term = FeatureExtraction::createCovariateSettings(
+    useDemographicsAge = TRUE,
+    useDemographicsGender = TRUE,
+    useConditionOccurrenceShortTerm = TRUE,
+    useConditionGroupEraShortTerm = TRUE,
+    useDrugExposureShortTerm = TRUE,
+    useDrugGroupEraShortTerm = TRUE,
+    useProcedureOccurrenceShortTerm = TRUE,
+    shortTermStartDays = -14,
+    endDays = 14
+  ),
+  medium_term = FeatureExtraction::createCovariateSettings(
+    useDemographicsAge = TRUE,
+    useDemographicsGender = TRUE,
+    useConditionOccurrenceShortTerm = TRUE,
+    useConditionGroupEraShortTerm = TRUE,
+    useDrugExposureShortTerm = TRUE,
+    useDrugGroupEraShortTerm = TRUE,
+    useProcedureOccurrenceShortTerm = TRUE,
+    shortTermStartDays = -30,
+    endDays = 30
+  ),
+  any_time_prior = FeatureExtraction::createCovariateSettings(
+    useDemographicsAge = TRUE,
+    useDemographicsGender = TRUE,
+    useConditionOccurrenceAnyTimePrior = TRUE,
+    useConditionGroupEraAnyTimePrior = TRUE,
+    useDrugExposureAnyTimePrior = TRUE,
+    useDrugGroupEraAnyTimePrior = TRUE,
+    useProcedureOccurrenceAnyTimePrior = TRUE,
+    endDays = 30
+  )
 )
 
-covariateData <- FeatureExtraction::getDbCovariateData(
-  connectionDetails = connectionDetails,
-  cdmDatabaseSchema = cdmDatabaseSchema,
-  cohortDatabaseSchema = resultsDatabaseSchema,
-  covariateSettings = covariateSettings,
-  cohortIds = 5
-)
+covariate_settings_names <- names(covariate_settings_list)
 
-FeatureExtraction::saveCovariateData(
-  covariateData = covariateData,
-  file = "covariateData"
-)
+if (!dir.exists("data")){
+  dir.create("data")
+  message("Created directory: ", crayon::italic("data"))
+}
+
+for (i in seq_along(covariate_settings_list)) {
+  
+  covariateData <- FeatureExtraction::getDbCovariateData(
+    connectionDetails = connectionDetails,
+    cdmDatabaseSchema = cdmDatabaseSchema,
+    cohortDatabaseSchema = resultsDatabaseSchema,
+    covariateSettings = covariate_settings_list[[i]],
+    cohortIds = 5
+  )
+  
+  FeatureExtraction::saveCovariateData(
+    covariateData = covariateData,
+    file = file.path(
+      "data",
+      paste("covariateData", covariate_settings_names[i], sep = "_")
+    )
+  )
+  
+  message(
+    "Saved covariateData for analysis: ", 
+    crayon::style(covariate_settings_names[i], crayon::italic)
+  )
+}
+

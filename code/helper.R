@@ -17,7 +17,7 @@ run_in_subgroups <- function(data, subgroup_settings, target, fun, ...) {
 }
 
 
-run_in_analysis <- function(data, analysis_id, fun, file = NULL, ...) {
+run_in_analysis <- function(data, analysis_name, analysis_id, fun, file = NULL, ...) {
   result_to_return <- data |> 
     dplyr::filter(analysisId == analysis_id) |> 
     dplyr::group_by(covariateName) |> 
@@ -30,7 +30,7 @@ run_in_analysis <- function(data, analysis_id, fun, file = NULL, ...) {
   if (!is.null(file)) {
     save_location <- file.path(
       file,
-      paste0(paste("overall_analysis_id", analysis_id, sep = "_"), ".csv")
+      paste0(analysis_name, "_", paste("overall_analysis_id", analysis_id, sep = "_"), ".csv")
     )
     readr::write_csv(
       x = result_to_return,
@@ -42,8 +42,8 @@ run_in_analysis <- function(data, analysis_id, fun, file = NULL, ...) {
   return(result_to_return)
 }
 
-run_subgroup_in_analysis <- function(data, subgroup_settings, 
-                                     analysis_id, result_label = "result",
+run_subgroup_in_analysis <- function(data, subgroup_settings, analysis_name,
+                                     subgroup_label, analysis_id, result_label = "result",
                                      file = NULL, fun, ...) {
   result_to_return <- list()
   subgroup_names <- names(subgroup_settings)
@@ -59,28 +59,32 @@ run_subgroup_in_analysis <- function(data, subgroup_settings,
       dplyr::select(-data) |> 
       dplyr::ungroup() |> 
       dplyr::arrange(dplyr::desc(result)) |> 
-      dplyr::rename("{result_label}" := "result")
+      dplyr::rename("{result_label}" := "result") |> 
+      dplyr::mutate(subgroup_value = subgroup_names[i])
     
     result_to_return[[i]] <- tmp
     
-    if (!is.null(file)) {
-      save_location <- file.path(
-        file,
-        paste0(
-          paste("subgroup", subgroup_names[i],
-                "analysis_id", analysis_id, sep = "_"),
-          ".csv"
-        )
-      )
-      readr::write_csv(
-        x = tmp,
-        file = save_location
-      )
-      message(paste("Wrote result in", save_location))
-    }
   }
   
   names(result_to_return) <- subgroup_names
+  
+  
+  if (!is.null(file)) {
+    save_location <- file.path(
+      file,
+      paste0(
+        analysis_name, "_",
+        paste("subgroup", subgroup_label,
+              "analysis_id", analysis_id, sep = "_"),
+        ".csv"
+      )
+    )
+    readr::write_csv(
+      x = dplyr::bind_rows(result_to_return),
+      file = save_location
+    )
+    message(paste("Wrote result in", save_location))
+  }
   
   return(result_to_return)
 }
