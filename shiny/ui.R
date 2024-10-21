@@ -45,23 +45,28 @@ shiny::shinyUI(
           shiny::tabsetPanel(
             id = "overall_results",
             shiny::tabPanel(
-              title = "Age"
+              title = "Age",
+              DT::dataTableOutput("overall_age")
             ),
             shiny::tabPanel(
               title = "Drugs",
-              formattable::formattableOutput("overall_drugs")
+              DT::dataTableOutput("overall_drugs")
             ),
             shiny::tabPanel(
-              title = "Conditions"
+              title = "Conditions",
+              DT::dataTableOutput("overall_conditions")
             ),
             shiny::tabPanel(
-              title = "Procedures"
+              title = "Procedures",
+              DT::dataTableOutput("overall_procedures")
             ),
             shiny::tabPanel(
-              title = "Drug groups"
+              title = "Drug groups",
+              DT::dataTableOutput("overall_drug_groups")
             ),
             shiny::tabPanel(
-              title = "Condition groups"
+              title = "Condition groups",
+              DT::dataTableOutput("overall_condition_groups")
             )
           )
         ),
@@ -73,7 +78,8 @@ shiny::shinyUI(
               title = "Age"
             ),
             shiny::tabPanel(
-              title = "Drugs"
+              title = "Drugs",
+              DT::dataTableOutput("subgroup_analysis_drugs")
             ),
             shiny::tabPanel(
               title = "Conditions"

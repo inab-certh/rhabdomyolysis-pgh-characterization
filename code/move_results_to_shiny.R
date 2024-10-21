@@ -14,3 +14,8 @@ sapply(
   function(file, directory) file.copy(from = file, to = file.path(directory, basename(file))),
   directory = "shiny/data"
 )
+
+list.files("shiny/data", pattern = "ref", full.names = TRUE) |>
+  lapply(readr::read_csv) |> 
+  dplyr::bind_rows() |> 
+  readr::write_csv("shiny/data/analysis_ref.csv")

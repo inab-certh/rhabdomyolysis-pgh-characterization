@@ -85,18 +85,32 @@ gender_subgroup_analysis <- analysis_ids |>
     .f = run_subgroup_in_analysis,
     data = extended_covariates, 
     subgroup_settings = subgroup_settings,
-    result_label = "percent",
+    result_label = "result",
     fun = function(df, n) length(unique(df$rowId)) / n * 100,
     file = save_directory,
     analysis_name = args[1],
     subgroup_label = "gender"
   )
 
-readr::write_csv(
-  x = analysisRef,
-  file = file.path(
-    "results",
-    paste("results", args[1], sep = "_"),
-    paste0(paste(args[1], "analysis_ref", sep = "_"), ".csv")
+
+
+analysisRef |> 
+  dplyr::mutate(
+    analysisNameShiny = dplyr::case_when(
+      stringr::str_detect(analysisName, "ConditionGroup") ~ "Condition groups",
+      stringr::str_detect(analysisName, "DrugExposure") ~ "Drugs",
+      stringr::str_detect(analysisName, "Gender") ~ "Gender",
+      stringr::str_detect(analysisName, "Age") ~ "Age",
+      stringr::str_detect(analysisName, "DrugGroup") ~ "Drug groups",
+      stringr::str_detect(analysisName, "ProcedureOccurrence") ~ "Procedures",
+      stringr::str_detect(analysisName, "ConditionOccurrence") ~ "Conditions"
+    ),
+    analysis = args[1]
+  ) |> 
+  readr::write_csv(
+    file = file.path(
+      "results",
+      paste("results", args[1], sep = "_"),
+      paste0(paste(args[1], "analysis_ref", sep = "_"), ".csv")
+    )
   )
-)
