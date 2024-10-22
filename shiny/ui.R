@@ -1,7 +1,7 @@
 shiny::shinyUI(
   shinydashboardPlus::dashboardPage(
-    skin                 = "black",
-    title                = "Simulations",
+    skin = "black",
+    title = "Simulations",
     shinydashboard::dashboardHeader(
       title = "Characterization"
     ),
@@ -10,29 +10,29 @@ shiny::shinyUI(
         id = "menu1",
         shinydashboard::menuItem(
           tabName = "overall",
-          text    = "Overall",
-          icon    = icon("file-alt")
+          text = "Overall",
+          icon = shiny::icon("chart-simple")
         ),
         shinydashboard::menuItem(
           tabName = "subgroup_analysis",
-          text    = "Subgroup analysis",
-          icon    = icon("cogs")
+          text = "Subgroup analysis",
+          icon = shiny::icon("magnifying-glass-chart")
         )
       ),
       shinydashboard::sidebarMenu(
         id = "menu2",
         shiny::selectInput(
-          inputId  = "analysis_name",
-          label    = "Analysis",
-          choices  = c("short_term", "medium_term", "any_time_prior"),
+          inputId = "analysis_name",
+          label = "Analysis",
+          choices = c("short_term", "medium_term", "any_time_prior"),
           selected = "short_term"
         ),
         shiny::conditionalPanel(
           condition = "input.menu1 == 'subgroup_analysis'",
           shiny::selectInput(
-            inputId  = "subgroup_variable",
-            label    = "Subgroup variable",
-            choices  = c("gender"),
+            inputId = "subgroup_variable",
+            label = "Subgroup variable",
+            choices = c("gender"),
             selected = "absent"
           )
         )
@@ -45,8 +45,8 @@ shiny::shinyUI(
           shiny::tabsetPanel(
             id = "overall_results",
             shiny::tabPanel(
-              title = "Age",
-              DT::dataTableOutput("overall_age")
+              title = "Age groups",
+              DT::dataTableOutput("overall_age_groups")
             ),
             shiny::tabPanel(
               title = "Drugs",
@@ -75,23 +75,28 @@ shiny::shinyUI(
           shiny::tabsetPanel(
             id = "subgroup_results",
             shiny::tabPanel(
-              title = "Age"
+              title = "Age groups",
+              DT::dataTableOutput("subgroup_analysis_age_groups")
             ),
             shiny::tabPanel(
               title = "Drugs",
               DT::dataTableOutput("subgroup_analysis_drugs")
             ),
             shiny::tabPanel(
-              title = "Conditions"
+              title = "Conditions",
+              DT::dataTableOutput("subgroup_analysis_conditions")
             ),
             shiny::tabPanel(
-              title = "Procedures"
+              title = "Procedures",
+              DT::dataTableOutput("subgroup_analysis_procedures")
             ),
             shiny::tabPanel(
-              title = "Drug groups"
+              title = "Drug groups",
+              DT::dataTableOutput("subgroup_analysis_drug_groups")
             ),
             shiny::tabPanel(
-              title = "Condition groups"
+              title = "Condition groups",
+              DT::dataTableOutput("subgroup_analysis_condition_groups")
             )
           )
         )

@@ -7,3 +7,5 @@ clean_shiny :
 	rm -rf shiny/data/*
 clean_results :
 	rm -rf results/*
+clean_data :
+	rm -rf shiny/data/* && rm -rf results/* && rm -rf data/*

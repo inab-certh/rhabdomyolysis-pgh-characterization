@@ -19,6 +19,7 @@ connectionDetails <- DatabaseConnector::createConnectionDetails(
 covariate_settings_list <- list(
   short_term = FeatureExtraction::createCovariateSettings(
     useDemographicsAge = TRUE,
+    useDemographicsAgeGroup = TRUE,
     useDemographicsGender = TRUE,
     useConditionOccurrenceShortTerm = TRUE,
     useConditionGroupEraShortTerm = TRUE,
@@ -30,6 +31,7 @@ covariate_settings_list <- list(
   ),
   medium_term = FeatureExtraction::createCovariateSettings(
     useDemographicsAge = TRUE,
+    useDemographicsAgeGroup = TRUE,
     useDemographicsGender = TRUE,
     useConditionOccurrenceShortTerm = TRUE,
     useConditionGroupEraShortTerm = TRUE,
@@ -41,6 +43,7 @@ covariate_settings_list <- list(
   ),
   any_time_prior = FeatureExtraction::createCovariateSettings(
     useDemographicsAge = TRUE,
+    useDemographicsAgeGroup = TRUE,
     useDemographicsGender = TRUE,
     useConditionOccurrenceAnyTimePrior = TRUE,
     useConditionGroupEraAnyTimePrior = TRUE,
@@ -59,6 +62,11 @@ if (!dir.exists("data")){
 }
 
 for (i in seq_along(covariate_settings_list)) {
+  
+  message(
+    crayon::bold("Extracting covariates for analysis: "),
+    crayon::bold(crayon::italic(covariate_settings_names[i]))
+  )
   
   covariateData <- FeatureExtraction::getDbCovariateData(
     connectionDetails = connectionDetails,

@@ -100,6 +100,7 @@ analysisRef |>
       stringr::str_detect(analysisName, "ConditionGroup") ~ "Condition groups",
       stringr::str_detect(analysisName, "DrugExposure") ~ "Drugs",
       stringr::str_detect(analysisName, "Gender") ~ "Gender",
+      stringr::str_detect(analysisName, "AgeGroup") ~ "Age groups",
       stringr::str_detect(analysisName, "Age") ~ "Age",
       stringr::str_detect(analysisName, "DrugGroup") ~ "Drug groups",
       stringr::str_detect(analysisName, "ProcedureOccurrence") ~ "Procedures",
@@ -107,6 +108,7 @@ analysisRef |>
     ),
     analysis = args[1]
   ) |> 
+  dplyr::arrange(analysisId) |> 
   readr::write_csv(
     file = file.path(
       "results",
