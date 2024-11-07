@@ -44,7 +44,9 @@ CohortGenerator::dropCohortStatsTables(
 
 pp <- DatabaseConnector::querySql(
   connection = conn,
-  sql = "SELECT COUNT(DISTINCT SUBJECT_ID) FROM results.cohort WHERE COHORT_DEFINITION_ID = 5"
+  sql = "SELECT COUNT(DISTINCT SUBJECT_ID) 
+  FROM results.cohort 
+  WHERE COHORT_DEFINITION_ID = 5"
 )
 
 message(

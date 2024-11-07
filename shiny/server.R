@@ -38,19 +38,36 @@ shiny::shinyServer(function(input, output,session) {
     
     })
     
-    results_file <- shiny::reactive({
-      
-      if (file.exists(file_name_reactive()))
-        readr::read_csv(file.path(file_name_reactive())) |> 
-        dplyr::mutate(result = result / 100)
-      else NA
-      
-    })
-    
     check_is_subgroup <- shiny::reactive({
       if (input$menu1 == "subgroup_analysis") TRUE
       else FALSE
     })
+    
+    check_is_measurement_range <- shiny::reactive({
+      if (current_analysis()$id %in% multiple_concepts) TRUE else FALSE
+    })
+    
+    results_file <- shiny::reactive({
+      
+      if (file.exists(file_name_reactive())) {
+        result <- readr::read_csv(file.path(file_name_reactive())) 
+        if (check_is_measurement_range()) {
+          result <- result |> 
+            dplyr::mutate(
+              measurement_below_normal_range = measurement_below_normal_range / 100,
+              measurement_above_normal_range = measurement_above_normal_range / 100,
+              measurement_within_normal_range = measurement_within_normal_range / 100
+            )
+        } else {
+          result <- result |> 
+            dplyr::mutate(result = result / 100)
+        }
+      } else {
+        NA
+      }
+      
+    })
+    
     
     current_output <- shiny::reactive({
       result <- paste(
@@ -68,7 +85,11 @@ shiny::shinyServer(function(input, output,session) {
         
         if (current_analysis()$is_binary) {
           output[[current_output()]] <- DT::renderDataTable({
-            result <- form_table(results_file(), check_is_subgroup()) |> 
+            result <- form_table(
+              results_file(), 
+              check_is_subgroup(),
+              check_is_measurement_range()
+            ) |> 
               formattable::as.datatable()
           })
         } else {

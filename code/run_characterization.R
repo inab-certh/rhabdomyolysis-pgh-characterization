@@ -22,13 +22,20 @@ FeatureExtraction::summary(covariateData)
 extended_covariates <- covariates |> 
   dplyr::left_join(covariateRef, by = "covariateId") |> 
   dplyr::arrange(rowId, analysisId, covariateId) |> 
+  # dplyr::mutate(
+  #   covariateName = stringr::str_remove(covariateName, pattern = ".*: ")
+  # ) |> 
   dplyr::mutate(
-    covariateName = stringr::str_remove(covariateName, pattern = ".*: ")
+    covariateName = stringr::str_replace(
+      covariateName, pattern = "(during).*?:", ":"
+    )
   ) |> 
   dplyr::left_join(
     analysisRef |> dplyr::select(analysisId, analysisName),
     by = "analysisId"
   )
+
+
 
 # ------------------------------------------------------------------------------
 # Overall analyses
@@ -37,6 +44,18 @@ extended_covariates <- covariates |>
 analysis_ids <- analysisRef |> 
   dplyr::filter(isBinary == "Y") |> 
   dplyr::pull(analysisId)
+
+multiple_concept_check <- analysis_ids |> 
+  purrr::map_lgl(
+    .f = is_multiple_concept,
+    data = extended_covariates
+  )
+
+analysisRef <- dplyr::tibble(
+  analysisId = analysis_ids,
+  multipleConceptCheck = multiple_concept_check
+) |> 
+  dplyr::left_join(analysisRef, by = "analysisId")
 
 save_directory <- file.path(
   "results",
@@ -48,13 +67,17 @@ if (!dir.exists(save_directory)) {
   message("Created directory: ", crayon::italic(save_directory))
 }
 
+n_total <- length(unique(extended_covariates$rowId))
+
 overall_analysis <- analysis_ids |> 
   purrr::map(
     .f = run_in_analysis,
     data = extended_covariates, 
-    fun = function(df, n = 320) length(unique(df$rowId)) / n * 100,
+    fun = function(df, n = n_total) length(unique(df$rowId)) / n * 100,
     file = save_directory,
-    analysis_name = args[1]
+    analysis_name = args[1],
+    analysisRef = analysisRef,
+    n_total = n_total
   )
 
 
@@ -62,35 +85,36 @@ overall_analysis <- analysis_ids |>
 # Subgroup analyses
 # ------------------------------------------------------------------------------
 
-male_patient_ids <- extended_covariates |> 
-  dplyr::filter(conceptId == 8507) |> 
-  dplyr::pull(rowId) |> 
-  unique()
-female_patient_ids <- extended_covariates |> 
-  dplyr::filter(conceptId == 8532) |> 
-  dplyr::pull(rowId) |> 
-  unique()
-unknown_gender_patient_ids <- extended_covariates |> 
-  dplyr::filter(conceptId == 4214687) |> 
-  dplyr::pull(rowId) |> 
-  unique()
+# male_patient_ids <- extended_covariates |> 
+#   dplyr::filter(conceptId == 8507) |> 
+#   dplyr::pull(rowId) |> 
+#   unique()
+# female_patient_ids <- extended_covariates |> 
+#   dplyr::filter(conceptId == 8532) |> 
+#   dplyr::pull(rowId) |> 
+#   unique()
+# unknown_gender_patient_ids <- extended_covariates |> 
+#   dplyr::filter(conceptId == 4214687) |> 
+#   dplyr::pull(rowId) |> 
+#   unique()
+# 
+# subgroup_settings <- list(
+#   female = female_patient_ids,
+#   male = male_patient_ids
+# )
+# 
+# gender_subgroup_analysis <- analysis_ids |> 
+#   purrr::map(
+#     .f = run_subgroup_in_analysis,
+#     data = extended_covariates, 
+#     subgroup_settings = subgroup_settings,
+#     result_label = "result",
+#     fun = function(df, n) length(unique(df$rowId)) / n * 100,
+#     file = save_directory,
+#     analysis_name = args[1],
+#     subgroup_label = "gender"
+#   )
 
-subgroup_settings <- list(
-  female = female_patient_ids,
-  male = male_patient_ids
-)
-
-gender_subgroup_analysis <- analysis_ids |> 
-  purrr::map(
-    .f = run_subgroup_in_analysis,
-    data = extended_covariates, 
-    subgroup_settings = subgroup_settings,
-    result_label = "result",
-    fun = function(df, n) length(unique(df$rowId)) / n * 100,
-    file = save_directory,
-    analysis_name = args[1],
-    subgroup_label = "gender"
-  )
 
 
 
@@ -104,7 +128,10 @@ analysisRef |>
       stringr::str_detect(analysisName, "Age") ~ "Age",
       stringr::str_detect(analysisName, "DrugGroup") ~ "Drug groups",
       stringr::str_detect(analysisName, "ProcedureOccurrence") ~ "Procedures",
-      stringr::str_detect(analysisName, "ConditionOccurrence") ~ "Conditions"
+      stringr::str_detect(analysisName, "ConditionOccurrence") ~ "Conditions",
+      stringr::str_detect(analysisName, "MeasurementRange") ~ "Measurement range",
+      stringr::str_detect(analysisName, "MeasurementValue") ~ "Measurement value",
+      stringr::str_detect(analysisName, "Measurement") ~ "Measurement"
     ),
     analysis = args[1]
   ) |> 

@@ -17,7 +17,7 @@ connectionDetails <- DatabaseConnector::createConnectionDetails(
 
 
 covariate_settings_list <- list(
-  short_term = FeatureExtraction::createCovariateSettings(
+  short_term= FeatureExtraction::createCovariateSettings(
     useDemographicsAge = TRUE,
     useDemographicsAgeGroup = TRUE,
     useDemographicsGender = TRUE,
@@ -26,6 +26,9 @@ covariate_settings_list <- list(
     useDrugExposureShortTerm = TRUE,
     useDrugGroupEraShortTerm = TRUE,
     useProcedureOccurrenceShortTerm = TRUE,
+    useMeasurementShortTerm = TRUE,
+    useMeasurementRangeGroupShortTerm = TRUE,
+    useMeasurementValueShortTerm = TRUE,
     shortTermStartDays = -14,
     endDays = 14
   ),
@@ -38,6 +41,9 @@ covariate_settings_list <- list(
     useDrugExposureShortTerm = TRUE,
     useDrugGroupEraShortTerm = TRUE,
     useProcedureOccurrenceShortTerm = TRUE,
+    useMeasurementMediumTerm = TRUE,
+    useMeasurementRangeGroupMediumTerm = TRUE,
+    useMeasurementValueMediumTerm = TRUE,
     shortTermStartDays = -30,
     endDays = 30
   ),
@@ -50,6 +56,9 @@ covariate_settings_list <- list(
     useDrugExposureAnyTimePrior = TRUE,
     useDrugGroupEraAnyTimePrior = TRUE,
     useProcedureOccurrenceAnyTimePrior = TRUE,
+    useMeasurementAnyTimePrior = TRUE,
+    useMeasurementRangeGroupAnyTimePrior = TRUE,
+    useMeasurementValueAnyTimePrior = TRUE,
     endDays = 30
   )
 )

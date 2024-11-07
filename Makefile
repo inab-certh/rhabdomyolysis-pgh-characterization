@@ -1,4 +1,6 @@
 .PHONY:
+covariate_data :
+	code/run_covariate_data_extraction.R
 characterizations : 
 	code/run_characterization.R short_term && code/run_characterization.R medium_term && code/run_characterization.R any_time_prior
 prepare_shiny :

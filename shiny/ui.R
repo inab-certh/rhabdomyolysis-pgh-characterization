@@ -57,6 +57,10 @@ shiny::shinyUI(
               DT::dataTableOutput("overall_conditions")
             ),
             shiny::tabPanel(
+              title = "Measurement",
+              DT::dataTableOutput("overall_measurement")
+            ),
+            shiny::tabPanel(
               title = "Procedures",
               DT::dataTableOutput("overall_procedures")
             ),
@@ -67,6 +71,10 @@ shiny::shinyUI(
             shiny::tabPanel(
               title = "Condition groups",
               DT::dataTableOutput("overall_condition_groups")
+            ),
+            shiny::tabPanel(
+              title = "Measurement range",
+              DT::dataTableOutput("overall_measurement_range")
             )
           )
         ),
