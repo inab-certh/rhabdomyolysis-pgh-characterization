@@ -105,6 +105,10 @@ shiny::shinyUI(
             shiny::tabPanel(
               title = "Condition groups",
               DT::dataTableOutput("subgroup_analysis_condition_groups")
+            ),
+            shiny::tabPanel(
+              title = "Measurement range",
+              DT::dataTableOutput("subgroup_analysis_measurement_range")
             )
           )
         )

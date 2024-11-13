@@ -85,22 +85,56 @@ run_subgroup_in_analysis <- function(
     data, subgroup_settings, analysis_name,
     subgroup_label, analysis_id, result_label = "result",
     file = NULL, fun, ...) {
+  
+  .f1 <- function(data) {
+    n_total <- nrow(data)
+    data |> 
+      dplyr::group_by(covariateName) |> 
+      dplyr::summarise(result = dplyr::n() / n_total * 100, .groups = "drop")
+  }
+  
   result_to_return <- list()
   subgroup_names <- names(subgroup_settings)
+  multiple_concept <- analysisRef |> 
+    dplyr::filter(analysisId == analysis_id) |> 
+    dplyr::pull(multipleConceptCheck)
   for (i in seq_along(subgroup_settings)) {
-    tmp <- data |> 
-      dplyr::filter(rowId %in% subgroup_settings[[i]]) |> 
-      dplyr::filter(analysisId == analysis_id) |> 
-      dplyr::group_by(covariateName) |> 
-      tidyr::nest() |> 
-      dplyr::mutate(
-        result = sapply(data, fun, n = length(subgroup_settings[[i]]))
-      ) |> 
-      dplyr::select(-data) |> 
-      dplyr::ungroup() |> 
-      dplyr::arrange(dplyr::desc(result)) |> 
-      dplyr::rename("{result_label}" := "result") |> 
-      dplyr::mutate(subgroup_value = subgroup_names[i])
+    
+    if (!multiple_concept) {
+      tmp <- data |> 
+        dplyr::filter(rowId %in% subgroup_settings[[i]]) |> 
+        dplyr::filter(analysisId == analysis_id) |> 
+        dplyr::group_by(covariateName) |> 
+        tidyr::nest() |> 
+        dplyr::mutate(
+          result = sapply(data, fun, n = length(subgroup_settings[[i]]))
+        ) |> 
+        dplyr::select(-data) |> 
+        dplyr::ungroup() |> 
+        dplyr::arrange(dplyr::desc(result)) |> 
+        dplyr::rename("{result_label}" := "result") |> 
+        dplyr::mutate(subgroup_value = subgroup_names[i])
+    } else {
+      tmp <- data |> 
+        dplyr::filter(rowId %in% subgroup_settings[[i]]) |> 
+        dplyr::filter(analysisId == analysis_id) |> 
+        dplyr::group_by(conceptId) |> 
+        tidyr::nest() |> 
+        dplyr::mutate(result = purrr::map(.x = data, .f = .f1)) |> 
+        dplyr::select(-data) |> 
+        tidyr::unnest(result) |> 
+        dplyr::arrange(conceptId, result) |> 
+        dplyr::ungroup() |> 
+        dplyr::mutate(
+          names = stringr::str_extract(covariateName, pattern = "^[^:]+(?= :)"),
+          variable  = stringr::str_extract(covariateName, pattern ="(?<=: ).*")
+        ) |>
+        dplyr::select(-covariateName) |>
+        dplyr::mutate(names = stringr::str_replace_all(names, " ", "_")) |>
+        tidyr::pivot_wider(names_from = names, values_from = result) |> 
+        dplyr::mutate(subgroup_value = subgroup_names[i]) |> 
+        dplyr::relocate(subgroup_value, .after = conceptId)
+    }
     
     result_to_return[[i]] <- tmp
     

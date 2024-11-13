@@ -85,35 +85,35 @@ overall_analysis <- analysis_ids |>
 # Subgroup analyses
 # ------------------------------------------------------------------------------
 
-# male_patient_ids <- extended_covariates |> 
-#   dplyr::filter(conceptId == 8507) |> 
-#   dplyr::pull(rowId) |> 
-#   unique()
-# female_patient_ids <- extended_covariates |> 
-#   dplyr::filter(conceptId == 8532) |> 
-#   dplyr::pull(rowId) |> 
-#   unique()
-# unknown_gender_patient_ids <- extended_covariates |> 
-#   dplyr::filter(conceptId == 4214687) |> 
-#   dplyr::pull(rowId) |> 
-#   unique()
-# 
-# subgroup_settings <- list(
-#   female = female_patient_ids,
-#   male = male_patient_ids
-# )
-# 
-# gender_subgroup_analysis <- analysis_ids |> 
-#   purrr::map(
-#     .f = run_subgroup_in_analysis,
-#     data = extended_covariates, 
-#     subgroup_settings = subgroup_settings,
-#     result_label = "result",
-#     fun = function(df, n) length(unique(df$rowId)) / n * 100,
-#     file = save_directory,
-#     analysis_name = args[1],
-#     subgroup_label = "gender"
-#   )
+male_patient_ids <- extended_covariates |>
+  dplyr::filter(conceptId == 8507) |>
+  dplyr::pull(rowId) |>
+  unique()
+female_patient_ids <- extended_covariates |>
+  dplyr::filter(conceptId == 8532) |>
+  dplyr::pull(rowId) |>
+  unique()
+unknown_gender_patient_ids <- extended_covariates |>
+  dplyr::filter(conceptId == 4214687) |>
+  dplyr::pull(rowId) |>
+  unique()
+
+subgroup_settings <- list(
+  female = female_patient_ids,
+  male = male_patient_ids
+)
+
+gender_subgroup_analysis <- analysis_ids |>
+  purrr::map(
+    .f = run_subgroup_in_analysis,
+    data = extended_covariates,
+    subgroup_settings = subgroup_settings,
+    result_label = "result",
+    fun = function(df, n) length(unique(df$rowId)) / n * 100,
+    file = save_directory,
+    analysis_name = args[1],
+    subgroup_label = "gender"
+  )
 
 
 

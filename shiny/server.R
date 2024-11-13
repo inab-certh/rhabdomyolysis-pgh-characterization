@@ -100,4 +100,10 @@ shiny::shinyServer(function(input, output,session) {
         }
       }
     })
+    
+    shiny::observe(print(current_analysis()))
+    shiny::observe(print(paste("Current output:", current_output())))
+    shiny::observe(print(file_name_reactive()))
+    shiny::observe(print(check_is_measurement_range()))
+    shiny::observe(print(results_file() |> data.frame() |> head()))
   })
